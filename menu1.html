@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toko Onimart</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  header {
+    background-color: #007BFF;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  nav {
+    background-color: #f2f2f2;
+    padding: 10px;
+  }
+  
+  nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  nav ul li {
+    display: inline;
+    margin-right: 20px;
+  }
+  
+  nav a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  main {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 10px;
+  }
+  h1 {
+      text-align: center;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+</style>
+<body>
+  <header>
+    <h1>Toko Onimart</h1>
+  </header>
+
+  
+
+  <main>
+    <!-- Konten utama Anda akan ada di sini -->
+     <h1>Input Database</h1>
+    
+     <form id="item-form">
+       <label for="nama">Nama:</label>
+       <input type="text" id="nama" required><br>
+    
+       <label for="isi">Isi:</label>
+       <input type="number" id="isi" required><br>
+    
+       <label for="harga-beli">Harga Beli:</label>
+       <input type="number" id="harga-beli" required><br>
+    
+       <label for="harga-jual">Harga Jual:</label>
+       <input type="number" id="harga-jual" required><br>
+    
+       <button type="submit">Simpan</button>
+     </form>
+    
+     <input type="text" id="filter-input" placeholder="Cari Nama" onkeyup="filterTable()">
+    
+     <table id="item-table">
+       <thead>
+         <tr>
+           <th>Nama</th>
+           <th>Isi</th>
+           <th>Harga Beli</th>
+           <th>Harga Jual</th>
+           <th>Aksi</th>
+         </tr>
+       </thead>
+       <tbody>
+         <!-- Data akan ditambahkan di sini -->
+       </tbody>
+     </table>
+    
+  
+  </main>
+
+  <footer>
+    <nav>
+      <ul>
+        <li><a href="menu.html">Data Cari</a></li>
+        <li><a href="menu1.html">Database</a></li>
+        <li>
+    <button onclick="logout()">Logout</button></li>
+      </ul>
+    </nav>
+    <p>&copy; 2023 Toko Onimart</p>
+  </footer>
+
+  <script src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js" > </script>
+  <script src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js" > </script>
+    <script src = "https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js" > </script>
+<script>
+      var firebaseConfig = {
+        apiKey: "AIzaSyApNlfleJa3KvKyRy3KYQOBO5qeS22FziY",
+          authDomain: "coba-23bfe.firebaseapp.com",
+          databaseURL: "https://coba-23bfe-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "coba-23bfe",
+          storageBucket: "coba-23bfe.appspot.com",
+          messagingSenderId: "1058388665215",
+          appId: "1:1058388665215:web:bb1065df8dbda2cb74b04a",
+          measurementId: "G-EKC43BZ8S0"
+      };
+    firebase.initializeApp(firebaseConfig);
+   // Inisialisasi Database
+  var db = firebase.database();
+  
+  document.getElementById("item-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+  
+    // Mengambil nilai dari input
+    var nama = document.getElementById("nama").value;
+    var isi = document.getElementById("isi").value;
+    var hargaBeli = parseFloat(document.getElementById("harga-beli").value);
+    var hargaJual = parseFloat(document.getElementById("harga-jual").value);
+  
+    // Mengecek apakah data sudah ada berdasarkan nama sebelum menambahkannya
+    var itemRef = db.ref("items");
+    itemRef.orderByChild("nama").equalTo(nama).once("value", function(snapshot) {
+      if (snapshot.exists()) {
+        alert("Data dengan nama tersebut sudah ada!");
+      } else {
+        // Menambahkan data ke Firebase Realtime Database
+        var newItemRef = itemRef.push();
+        newItemRef.set({
+            nama: nama,
+            isi: isi,
+            hargaBeli: hargaBeli,
+            hargaJual: hargaJual
+          })
+          .then(function() {
+            console.log("Data berhasil disimpan!");
+  
+            // Mengosongkan input setelah data disimpan
+            document.getElementById("nama").value = "";
+            document.getElementById("isi").value = "";
+            document.getElementById("harga-beli").value = "";
+            document.getElementById("harga-jual").value = "";
+          })
+          .catch(function(error) {
+            console.error("Error: ", error);
+          });
+      }
+    });
+  });
+  
+  
+  
+  
+    // Fungsi untuk memfilter tabel berdasarkan input nama
+    function filterTable() {
+      var input, filter, table, tr, td, i, txtValue;
+      input = document.getElementById("filter-input");
+      filter = input.value.toUpperCase();
+      table = document.getElementById("item-table");
+      tr = table.getElementsByTagName("tr");
+
+      for (i = 0; i < tr.length; i++) {
+        // Kolom pertama berisi nama, sedangkan kolom terakhir berisi tombol aksi
+        td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+      }
+    }
+   
+    // Memantau perubahan data di Firebase Realtime Database dan memperbarui tabel secara real-time
+    db.ref("items").on("value", function(snapshot) {
+      var table = document.getElementById("item-table").getElementsByTagName('tbody')[0];
+      table.innerHTML = ""; // Menghapus isi tabel sebelum diperbarui
+
+      snapshot.forEach(function(childSnapshot) {
+        var data = childSnapshot.val();
+        var newRow = table.insertRow(table.rows.length);
+        newRow.insertCell(0).appendChild(document.createTextNode(data.nama));
+        newRow.insertCell(1).appendChild(document.createTextNode(data.isi));
+        newRow.insertCell(2).appendChild(document.createTextNode(data.hargaBeli));
+        newRow.insertCell(3).appendChild(document.createTextNode(data.hargaJual));
+
+        // Menambahkan tombol "Hapus" pada setiap baris
+        var deleteButton = document.createElement("button");
+        deleteButton.textContent = "Hapus";
+        deleteButton.addEventListener("click", function() {
+          var confirmation = confirm("Apakah Anda yakin ingin menghapus data ini?");
+          if (confirmation) {
+            var itemKey = childSnapshot.key;
+            db.ref("items/" + itemKey).remove()
+            .then(function() {
+              console.log("Data berhasil dihapus!");
+            })
+            .catch(function(error) {
+              console.error("Error: ", error);
+            });
+          }
+        });
+
+        newRow.insertCell(4).appendChild(deleteButton);
+      });
+    });
+    
+  // ... (Kode JavaScript yang sudah ada) ...
+
+  // Function untuk logout
+  function logout() {
+    firebase.auth().signOut()
+      .then(function() {
+        // Redirect ke halaman login setelah berhasil logout
+        window.location.href = "mlebu.html";
+      })
+      .catch(function(error) {
+        var errorMessage = error.message;
+        console.log(errorMessage);
+        // Tampilkan pesan error ke pengguna jika logout gagal
+        alert("Error: " + errorMessage);
+      });
+  }
+
+
+  </script>
+</body>
+</html>
