@@ -68,7 +68,8 @@
         let score = 0;
         let lives = 3;
         let enemySpeed = 2;
-        const enemySpeedIncreaseInterval = 10000;
+   const enemySpeedIncreaseInterval = 5000; // Tingkatkan kecepatan setiap 5 detik
+setInterval(increaseEnemySpeed, enemySpeedIncreaseInterval);
 
         const scoreDisplay = document.getElementById('score');
         const livesDisplay = document.getElementById('lives');
@@ -330,7 +331,7 @@ function detectCollisions() {
           }
         }
 
-        setInterval(createEnemy, 1000);
+        setInterval(createEnemy, 500); // Sekarang musuh muncul setiap 500 ms
         setInterval(increaseEnemySpeed, enemySpeedIncreaseInterval);
         
         
@@ -374,16 +375,14 @@ function detectCollisions() {
         
         
         window.onload = function() {
-          var gridId = 'game1'; // Ubah ini sesuai halaman (game1, game2, atau game3)
-        
-          // Set ulang waktu saat halaman grid dibuka
-          var newEndTime = new Date().getTime() + 30 * 1000; // Set durasi countdown baru (misalnya 30 detik)
-          localStorage.setItem(gridId + 'EndTime', newEndTime);
-          localStorage.setItem(gridId + 'Expired', 'false'); // Set expired kembali ke false
-        
-          // Mulai countdown lagi
-          initializeCountdown(gridId, newEndTime);
-        }
+  var gridId = 'game1'; // Sesuaikan ini jika ada perubahan halaman
+  var newEndTime = new Date().getTime() + 3 * 60 * 1000; // Durasi countdown baru menjadi 3 menit (180 detik)
+  localStorage.setItem(gridId + 'EndTime', newEndTime);
+  localStorage.setItem(gridId + 'Expired', 'false'); // Set expired kembali ke false
+
+  // Mulai countdown lagi
+  initializeCountdown(gridId, newEndTime);
+}
     </script>
 </body>
 </html>

@@ -125,7 +125,7 @@ h1 {
         let moves = 0;
         let saldo = 0;
         let timer;
-        const timeLimit = 5; // Batas waktu dalam detik
+        const timeLimit = 45; // Batas waktu dalam detik// Batas waktu dalam detik
 
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -237,7 +237,7 @@ h1 {
           var gridId = 'game2'; // Ubah ini sesuai halaman (game1, game2, atau game3)
         
           // Set ulang waktu saat halaman grid dibuka
-          var newEndTime = new Date().getTime() + 30 * 1000; // Set durasi countdown baru (misalnya 30 detik)
+          var newEndTime = new Date().getTime() + 180 * 1000; // Set durasi countdown baru (misalnya 30 detik)
           localStorage.setItem(gridId + 'EndTime', newEndTime);
           localStorage.setItem(gridId + 'Expired', 'false'); // Set expired kembali ke false
         

@@ -1,289 +1,197 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permainan Dino</title>
-       <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-   <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
-   <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
-   <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
-    <style>
-        /* CSS Tema Nintendo 3DS */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Cube Game</title>
+     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    
+  <style>
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-/* CSS Tema Nintendo DS */
-
-body {
-    font-family: Arial, sans-serif;
-    background: #bdbdbd;
-    color: #333;
+  body {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    margin: 0;
-}
+    background-color: #70c5ce; /* Latar belakang langit */
+    font-family: Arial, sans-serif;
+    background-color: #70c5ce; /* Background warna biru */
+  }
 
-#gameContainer {
-    text-align: center;
-    width: 100%;
-    max-width: 600px;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-    border: 2px solid #616161;
-}
+  canvas {
+    border: 2px solid #000;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Efek bayangan pada kanvas */
+  }
 
-#gameArea {
-    border: 2px solid #212121;
-    width: 100%;
-    height: 33.33vw;
-    overflow: hidden;
-    position: relative;
-    margin: 0 auto;
-    background: #e0e0e0;
-    border-radius: 8px;
-    box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.2);
-}
-
-#dino {
-    width: 10vw;
-    height: 10vw;
-    position: absolute;
-    bottom: 10px;
-    left: 10%;
-    background-image: url('dino-image-url');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    animation: jump 0.3s;
-    border-radius: 4px;
-}
-
-.obstacle {
-    position: absolute;
-    bottom: -10px;
-    background-image: url('obstacle-image-url');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    animation: moveObstacle 2s linear infinite;
-}
-
-#score {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: #212121;
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-@keyframes jump {
-    0% { bottom: 10px; }
-    50% { bottom: 100px; }
-    100% { bottom: 10px; }
-}
-
-@keyframes moveObstacle {
-    from { right: -10%; }
-    to { right: 100%; }
-}
-    </style>
+  </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <h1>Permainan Dino</h1>
-        <div id="score">Skor: 0</div>
-        <div id="gameArea">
-            <div id="dino"></div>
-        </div>
-    </div>
+  <canvas id="gameCanvas"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-    <script>
-        const dino = document.getElementById('dino');
-        const gameArea = document.getElementById('gameArea');
-        const scoreElement = document.getElementById('score');
-        let score = 0;
-        let isGameOver = false;
-        let isJumping = false;
-        const jumpHeight = 50;
-        const jumpDuration = 600;
+    canvas.width = 400;
+    canvas.height = 600;
 
-        const dinoRunImages = [
-          'https://i.ibb.co/pnF99Zn/Run-1.png',
-'https://i.ibb.co/MDhLgZB/Run-2.png',
-'https://i.ibb.co/bgtKCxc/Run-3.png',
-'https://i.ibb.co/VLXCH5n/Run-4.png',
-'https://i.ibb.co/M9Cx0yN/Run-5.png',
-'https://i.ibb.co/nw5q9bW/Run-6.png',
-'https://i.ibb.co/qmV7Dv1/Run-7.png',
-'https://i.ibb.co/m67nt94/Run-8.png'
-        ];
-        const dinoJumpImage = 'https://i.ibb.co.com/zR9zTxf/Jump-11.png';
-        let runImageIndex = 0;
-        
-        const obstacleImages = [
-            'https://img.icons8.com/3d-fluency/94/trash.png',
-            'https://img.icons8.com/plasticine/50/grass.png',
-            'https://img.icons8.com/fluency/50/chair.png',
-            'https://img.icons8.com/emoji/48/brick-emoji.png',
-            'https://img.icons8.com/3d-fluency/94/trash-pile.png'
-        ];
+    // Variabel permainan
+    let birdX = 50;
+    let birdY = canvas.height / 2;
+    let birdSize = 20;
+    let gravity = 0.5;
+    let velocity = 0;
+    let lift = -10;
+    let score = 0;
+    let isGameOver = false;
 
-        // Animasi berlari
-        function startDinoRun() {
-            setInterval(() => {
-                if (!isJumping) {
-                    dino.style.backgroundImage = `url(${dinoRunImages[runImageIndex]})`;
-                    runImageIndex = (runImageIndex + 1) % dinoRunImages.length;
-                }
-            }, 30);
-        }
+    // Variabel untuk rintangan
+    let pipes = [];
+    let pipeWidth = 50;
+    let pipeGap = 150;
+    let pipeSpeed = 2;
+    let frameCount = 0;
 
-        document.addEventListener('keydown', function(event) {
-            if (event.key === ' ' && !isGameOver) {
-                jump();
-            }
+    // Fungsi game loop
+    function updateGame() {
+      if (isGameOver) return;
+
+      // Membersihkan kanvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gambar dan update burung (kubus)
+      velocity += gravity;
+      birdY += velocity;
+      ctx.fillStyle = "yellow";
+      ctx.fillRect(birdX, birdY, birdSize, birdSize);
+
+      // Buat dan update rintangan
+      if (frameCount % 100 === 0) {
+        let pipeHeight = Math.floor(Math.random() * (canvas.height - pipeGap));
+        pipes.push({
+          x: canvas.width,
+          topHeight: pipeHeight,
+          bottomY: pipeHeight + pipeGap
         });
-
-        document.addEventListener('touchstart', function(event) {
-            if (!isGameOver) jump();
-        });
-
-        function jump() {
-            if (isJumping) return;
-            isJumping = true;
-            dino.style.backgroundImage = `url(${dinoJumpImage})`; // Ganti ke gambar lompat
-
-            const startTime = Date.now();
-            const jumpInterval = setInterval(function() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / jumpDuration, 1);
-                const jumpPosition = jumpHeight * Math.sin(progress * Math.PI);
-                dino.style.bottom = jumpPosition + 'px';
-
-                if (progress === 1) {
-                    clearInterval(jumpInterval);
-                    isJumping = false;
-                    dino.style.bottom = '0px';
-                }
-            }, 20);
-        }
-
-        function generateObstacle() {
-  if (isGameOver) return;
-
-  const obstacle = document.createElement('div');
-  obstacle.classList.add('obstacle');
-  obstacle.style.height = '10vw';
-  obstacle.style.width = '8vw';
-  obstacle.style.left = '100%';
-  const randomImage = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
-  obstacle.style.backgroundImage = `url(${randomImage})`;
-
-  gameArea.appendChild(obstacle);
-  let obstaclePosition = gameArea.offsetWidth;
-
-  const timerId = setInterval(function() {
-    if (isGameOver) {
-      clearInterval(timerId);
-      if (obstacle.parentElement) obstacle.remove();
-      return;
-    }
-
-    if (obstaclePosition < -obstacle.offsetWidth) {
-      clearInterval(timerId);
-      obstacle.remove();
-      score++;
-      scoreElement.textContent = `Skor: ${score}`;
-      updateSaldo(1); // Tambahkan 1 ke saldo untuk setiap skor yang bertambah
-    } else {
-      obstaclePosition -= 10;
-      obstacle.style.left = obstaclePosition + 'px';
-
-      const dinoBottom = parseInt(dino.style.bottom);
-      if (obstaclePosition > 50 && obstaclePosition < 100 && dinoBottom === 0) {
-        endGame();
-        clearInterval(timerId);
       }
-    }
-  }, 20);
-}
 
-        function startGeneratingObstacles() {
-            const obstacleInterval = setInterval(function() {
-                if (isGameOver) {
-                    clearInterval(obstacleInterval);
-                } else {
-                    generateObstacle();
-                }
-            }, Math.random() * 2000 + 1000);
+      pipes.forEach((pipe, index) => {
+        pipe.x -= pipeSpeed;
+        ctx.fillStyle = "green";
+        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.topHeight);
+        ctx.fillRect(pipe.x, pipe.bottomY, pipeWidth, canvas.height - pipe.bottomY);
+     // Deteksi tabrakan
+        if (
+          birdX < pipe.x + pipeWidth &&
+          birdX + birdSize > pipe.x &&
+          (birdY < pipe.topHeight || birdY + birdSize > pipe.bottomY)
+        ) {
+          isGameOver = true;
+alert("Game Over! Skor Anda: " + score);
+window.location.href = "main.html"; // Arahkan ke halaman main.html setelah klik OK
         }
 
-        function endGame() {
-  alert('Permainan Selesai');
+      // Hapus rintangan yang keluar layar dan tambahkan skor
+if (pipe.x + pipeWidth < 0) {
+  pipes.splice(index, 1);
+  score += 50; // Tambahkan 50 poin untuk setiap rintangan yang berhasil dilewati
+  updateSaldo(50); // Panggil fungsi untuk menambahkan skor ke saldo
+}
+      });
+
+     // Cek jika burung (kubus) menyentuh tanah atau terbang terlalu tinggi
+if (birdY + birdSize > canvas.height || birdY < 0) {
   isGameOver = true;
-
-  // Hapus semua rintangan yang tersisa
-  const obstacles = document.querySelectorAll('.obstacle');
-  obstacles.forEach(obstacle => obstacle.remove());
-
-  // Arahkan ke main.html setelah game over
-  window.location.href = 'main.html';
+  updateSaldo(score); // Perbarui saldo dengan skor saat ini
+  alert("Game Over! Skor Anda: " + score);
+  window.location.href = "main.html"; // Arahkan ke halaman main.html setelah klik OK
 }
 
-        startGeneratingObstacles();
-        startDinoRun(); // Memulai animasi lari Dino
-          // Firebase
-  var firebaseConfig = {
-    apiKey: "AIzaSyC6q-jTNQxXOPCaZczcpgRk4q8ftQ0-n3c",
-    authDomain: "internet-14942.firebaseapp.com",
-    projectId: "internet-14942",
-    storageBucket: "internet-14942.appspot.com",
-    messagingSenderId: "214259914034",
-    appId: "1:214259914034:web:de404cf9ee7b35b41b732b",
-    measurementId: "G-BX35S5MZJY"
-  };
-  firebase.initializeApp(firebaseConfig);
+      // Gambar skor
+      ctx.fillStyle = "black";
+      ctx.font = "24px Arial";
+      ctx.fillText("Skor: " + score, 10, 30);
 
-  var db = firebase.firestore();
+      frameCount++;
+      requestAnimationFrame(updateGame);
+    }
 
-  // Fungsi untuk memperbarui saldo
-  function updateSaldo(tambahSaldo) {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        var userId = user.uid;
-        var saldoRef = db.collection("users").doc(userId);
-
-        // Ambil saldo saat ini dan tambahkan
-        saldoRef.get().then(function(doc) {
-          if (doc.exists) {
-            var saldoSekarang = doc.data().saldo;
-            saldoRef.update({
-              saldo: firebase.firestore.FieldValue.increment(tambahSaldo)
-            }).then(function() {
-              console.log("Saldo berhasil diperbarui!");
-            }).catch(function(error) {
-              console.error("Kesalahan saat memperbarui saldo: ", error);
-            });
-          }
-        });
+    // Kontrol burung (kubus)
+    document.addEventListener("keydown", () => {
+      if (!isGameOver) {
+        velocity = lift;
       }
     });
-  }
+
+    document.addEventListener("touchstart", () => {
+      if (!isGameOver) {
+        velocity = lift;
+      }
+    });
+
+    // Mulai permainan
+    updateGame();
+    
+    
+              // Firebase
+          var firebaseConfig = {
+            apiKey: "AIzaSyC6q-jTNQxXOPCaZczcpgRk4q8ftQ0-n3c",
+            authDomain: "internet-14942.firebaseapp.com",
+            projectId: "internet-14942",
+            storageBucket: "internet-14942.appspot.com",
+            messagingSenderId: "214259914034",
+            appId: "1:214259914034:web:de404cf9ee7b35b41b732b",
+            measurementId: "G-BX35S5MZJY"
+          };
+          firebase.initializeApp(firebaseConfig);
+
+          var db = firebase.firestore();
+
+          // Fungsi untuk memperbarui saldo
+          function updateSaldo(tambahSaldo) {
+            firebase.auth().onAuthStateChanged(function(user) {
+              if (user) {
+                var userId = user.uid;
+                var saldoRef = db.collection("users").doc(userId);
+
+                // Ambil saldo saat ini dan tambahkan
+                saldoRef.get().then(function(doc) {
+                  if (doc.exists) {
+                    var saldoSekarang = doc.data().saldo;
+                    saldoRef.update({
+                      saldo: firebase.firestore.FieldValue.increment(tambahSaldo)
+                    }).then(function() {
+                      console.log("Saldo berhasil diperbarui!");
+                    }).catch(function(error) {
+                      console.error("Kesalahan saat memperbarui saldo: ", error);
+                    });
+                  }
+                });
+              }
+            });
+          }
 
 
-  window.onload = function() {
-    var gridId = 'game3'; // Ubah ini sesuai halaman (game1, game2, atau game3)
+          window.onload = function() {
+            var gridId = 'game3'; // Ubah ini sesuai halaman (game1, game2, atau game3)
 
-    // Set ulang waktu saat halaman grid dibuka
-    var newEndTime = new Date().getTime() + 30 * 1000; // Set durasi countdown baru (misalnya 30 detik)
-    localStorage.setItem(gridId + 'EndTime', newEndTime);
-    localStorage.setItem(gridId + 'Expired', 'false'); // Set expired kembali ke false
+            // Set ulang waktu saat halaman grid dibuka
+            var newEndTime = new Date().getTime() + 180 * 1000; // Set durasi countdown baru (misalnya 30 detik)
+            localStorage.setItem(gridId + 'EndTime', newEndTime);
+            localStorage.setItem(gridId + 'Expired', 'false'); // Set expired kembali ke false
 
-    // Mulai countdown lagi
-    initializeCountdown(gridId, newEndTime);
-  }
-    </script>
+            // Mulai countdown lagi
+            initializeCountdown(gridId, newEndTime);
+          }
+  </script>
 </body>
 </html>
+
+
