@@ -189,34 +189,46 @@ h1 {
   <!-- Firebase JS SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
-  <script>
-    // Inisialisasi Firebase
-    var firebaseConfig = {
-      apiKey: "AIzaSyC6q-jTNQxXOPCaZczcpgRk4q8ftQ0-n3c",
-      authDomain: "internet-14942.firebaseapp.com",
-      projectId: "internet-14942",
-      storageBucket: "internet-14942.appspot.com",
-      messagingSenderId: "214259914034",
-      appId: "1:214259914034:web:de404cf9ee7b35b41b732b",
-      measurementId: "G-BX35S5MZJY"
-    };
-    firebase.initializeApp(firebaseConfig);
+<script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script> 
+<script >
+  // Inisialisasi Firebase
+  var firebaseConfig = {
+    apiKey: "AIzaSyC6q-jTNQxXOPCaZczcpgRk4q8ftQ0-n3c",
+    authDomain: "internet-14942.firebaseapp.com",
+    projectId: "internet-14942",
+    storageBucket: "internet-14942.appspot.com",
+    messagingSenderId: "214259914034",
+    appId: "1:214259914034:web:de404cf9ee7b35b41b732b",
+    measurementId: "G-BX35S5MZJY"
+  };
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
 
-    // Fungsi pendaftaran menggunakan email dan password
-    function register() {
-      var email = document.getElementById('email').value;
-      var password = document.getElementById('password').value;
+// Fungsi pendaftaran dengan menambahkan data pengguna ke Firestore
+function register() {
+  var email = document.getElementById('email').value;
+  var password = document.getElementById('password').value;
 
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          // Pendaftaran berhasil, arahkan ke halaman login
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      // Pendaftaran berhasil, tambahkan data pengguna ke Firestore
+      var user = userCredential.user;
+      db.collection("users").doc(user.uid).set({
+          email: email,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then(() => {
           alert("Pendaftaran berhasil, silakan login.");
-          window.location.href = "index.html"; // Ganti dengan halaman login Anda
+          window.location.href = "index.html"; // Arahkan ke halaman login
         })
         .catch((error) => {
-          alert("Pendaftaran gagal: " + error.message);
+          console.error("Gagal menambahkan data pengguna: ", error);
         });
-    }
-  </script>
+    })
+    .catch((error) => {
+      alert("Pendaftaran gagal: " + error.message);
+    });
+}
+</script>
 </body>
 </html>
